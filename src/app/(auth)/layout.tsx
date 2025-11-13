@@ -1,17 +1,27 @@
+import { AuthProvider } from '@/auth-provider';
 import { Header } from '@/components/layout/header';
-import { Auth } from '@/providers';
+import { getServerSession } from 'next-auth';
+import { signIn } from 'next-auth/react';
+// app/(auth)/layout.tsx
+import type { ReactNode } from 'react';
 
 export default async function Layout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: ReactNode;
+}) {
+  const session = await getServerSession();
+
+  if (!session) {
+    signIn();
+  }
+
   return (
-    <Auth>
+    <AuthProvider session={session}>
       <div className="flex h-full flex-col">
         <Header />
         <div className="flex-1">{children}</div>
       </div>
-    </Auth>
+    </AuthProvider>
   );
 }
