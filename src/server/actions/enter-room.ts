@@ -1,8 +1,11 @@
 'use server';
-import { redirect } from 'next/navigation';
-import type { Result } from './type';
 
-export async function enterRoom(formData: FormData): Promise<Result> {
+import { redirect } from 'next/navigation';
+import type { ActionResult } from './type';
+
+export async function enterRoom(
+  formData: FormData,
+): Promise<ActionResult<void>> {
   const roomKey = formData.get('roomKey');
   if (typeof roomKey !== 'string' || !/^[0-9]{6}$/.test(roomKey)) {
     return {
