@@ -13,6 +13,7 @@ import {
 } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Spinner } from '../ui/spinner';
+import { useRouter } from 'next/navigation';
 
 interface Props {
   roomKey: string;
@@ -24,6 +25,7 @@ interface Props {
 export default function CreateRoomForm({ roomKey, open, closeHandler }: Props) {
   const [newRoomName, setNewRoomName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   async function handleCreateNewRoom() {
     if (!newRoomName.trim()) return;
@@ -42,11 +44,8 @@ export default function CreateRoomForm({ roomKey, open, closeHandler }: Props) {
       }
 
       const room = result.body;
-      console.log('created room', room);
 
-      // TODO: ここで部屋ページに遷移するなど:
-      // router.push(`/rooms/${room.roomId}`);
-      // or props.onCreated?.(room);
+      router.push(`/room?roomKey=${room.roomKey}`);
 
       closeHandler();
       setNewRoomName('');
