@@ -1,7 +1,7 @@
 import { AuthProvider } from '@/auth-provider';
 import { Header } from '@/components/layout/header';
 import { getServerSession } from 'next-auth';
-import { signIn } from 'next-auth/react';
+import { redirect } from 'next/navigation';
 // app/(auth)/layout.tsx
 import type { ReactNode } from 'react';
 
@@ -13,7 +13,7 @@ export default async function Layout({
   const session = await getServerSession();
 
   if (!session) {
-    signIn();
+    redirect('/login');
   }
 
   return (
