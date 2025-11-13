@@ -1,5 +1,5 @@
-import { Auth } from '@/providers';
 import { Header } from '@/components/layout/header';
+import { Auth } from '@/providers';
 
 export default async function Layout({
   children,

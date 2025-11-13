@@ -1,8 +1,8 @@
-import { DynamoDBAdapter } from '@auth/dynamodb-adapter';
 import { ddbDocument } from '@/lib/dynamo';
+import { DynamoDBAdapter } from '@auth/dynamodb-adapter';
 import type { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
 import type { AdapterUser } from 'next-auth/adapters';
+import CredentialsProvider from 'next-auth/providers/credentials';
 const adapter = DynamoDBAdapter(ddbDocument, {
   tableName: process.env.NEXTAUTH_TABLE,
 });
