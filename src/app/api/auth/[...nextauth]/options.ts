@@ -76,5 +76,14 @@ export const options: NextAuthOptions = {
   debug: true,
   session: {
     strategy: 'jwt',
+    maxAge: 365 * 24 * 60 * 60,
+  },
+  callbacks: {
+    async session({ session, token }) {
+      if (session?.user && token.sub) {
+        session.user.id = token.sub;
+      }
+      return session;
+    },
   },
 };

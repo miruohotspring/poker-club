@@ -8,11 +8,14 @@ import { getRoomByKey } from '@/server/actions/get-room-by-key';
 import type React from 'react';
 import { useState } from 'react';
 import CreateRoomForm from './create-room-form';
+import EnterRoomCheckForm from './enter-room-check-form';
 
 export default function EnterRoomForm() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [roomKey, setRoomKey] = useState('');
+  const [roomName, setRoomName] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEnterDialogOpen, setIsEnterDialogOpen] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -25,8 +28,8 @@ export default function EnterRoomForm() {
 
       if (result.success) {
         if (result.body) {
-          // TODO: check entering
-          console.log('found room', result.body);
+          setRoomName(result.body.name);
+          setIsEnterDialogOpen(true);
         } else {
           setIsCreateDialogOpen(true);
         }
@@ -89,6 +92,12 @@ export default function EnterRoomForm() {
         roomKey={roomKey}
         open={isCreateDialogOpen}
         closeHandler={() => setIsCreateDialogOpen(false)}
+      />
+      <EnterRoomCheckForm
+        roomKey={roomKey}
+        roomName={roomName}
+        open={isEnterDialogOpen}
+        closeHandler={() => setIsEnterDialogOpen(false)}
       />
     </>
   );

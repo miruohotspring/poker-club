@@ -17,4 +17,7 @@ export type Room = {
   updatedAt: Date;
 };
 
-export type ActionError = 'invalid-room-key';
+export type ActionError =
+  | 'invalid-room-key'
+  | 'invalid-room-name'
+  | 'internal-server-error';

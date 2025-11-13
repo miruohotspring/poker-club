@@ -1,5 +1,6 @@
 'use client';
 
+import { createRoom } from '@/server/actions/create-room';
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import {
@@ -11,23 +12,47 @@ import {
   DialogTitle,
 } from '../ui/dialog';
 import { Input } from '../ui/input';
+import { Spinner } from '../ui/spinner';
 
 interface Props {
   roomKey: string;
   open: boolean;
   closeHandler: () => void;
+  // 必要なら onCreated?: (room: { roomId: string; roomKey: string; name: string }) => void;
 }
 
 export default function CreateRoomForm({ roomKey, open, closeHandler }: Props) {
   const [newRoomName, setNewRoomName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleCreateNewRoom() {
-    // TODO: createRoom(server action) を呼び出す
-    console.log('create new room', { roomKey, newRoomName });
+    if (!newRoomName.trim()) return;
 
-    // ひとまずポップアップを閉じるだけ
-    closeHandler();
-    setNewRoomName('');
+    setIsLoading(true);
+    try {
+      const result = await createRoom({
+        roomKey,
+        roomName: newRoomName.trim(),
+      });
+
+      if (!result.success) {
+        console.error('createRoom error', result.error);
+        // TODO: エラー表示
+        return;
+      }
+
+      const room = result.body;
+      console.log('created room', room);
+
+      // TODO: ここで部屋ページに遷移するなど:
+      // router.push(`/rooms/${room.roomId}`);
+      // or props.onCreated?.(room);
+
+      closeHandler();
+      setNewRoomName('');
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -47,6 +72,7 @@ export default function CreateRoomForm({ roomKey, open, closeHandler }: Props) {
               placeholder="例: 金曜ナイトテーブル"
               value={newRoomName}
               onChange={(e) => setNewRoomName(e.target.value)}
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -55,9 +81,9 @@ export default function CreateRoomForm({ roomKey, open, closeHandler }: Props) {
           <Button
             type="button"
             onClick={handleCreateNewRoom}
-            disabled={!newRoomName.trim()}
+            disabled={isLoading || !newRoomName.trim()}
           >
-            新規作成
+            {isLoading ? <Spinner /> : '新規作成'}
           </Button>
         </DialogFooter>
       </DialogContent>
