@@ -4,18 +4,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
-import { getRoomByKey } from '@/server/actions/get-room-by-key';
+import { checkRoomBalance } from '@/server/actions/check-room-balance';
+import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { useState } from 'react';
 import CreateRoomForm from './create-room-form';
+import EnterNewRoomForm from './enter-new-room-form';
 import EnterRoomCheckForm from './enter-room-check-form';
 
 export default function EnterRoomForm() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [roomKey, setRoomKey] = useState('');
+  const [roomId, setRoomId] = useState('');
   const [roomName, setRoomName] = useState('');
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEnterDialogOpen, setIsEnterDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false); // 1. 部屋がない
+  const [isEnterNewDialogOpen, setIsEnterNewDialogOpen] = useState(false); //2. 部屋はあるが残高がない
+  const [isEnterDialogOpen, setIsEnterDialogOpen] = useState(false); // 3. 部屋も残高もある
+  const router = useRouter();
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -24,18 +29,31 @@ export default function EnterRoomForm() {
     try {
       const form = e.currentTarget;
       const formData = new FormData(form);
-      const result = await getRoomByKey(formData);
+      // 部屋・残高確認
+      const result = await checkRoomBalance(formData.get('roomKey') as string);
 
-      if (result.success) {
-        if (result.body) {
-          setRoomName(result.body.name);
-          setIsEnterDialogOpen(true);
-        } else {
+      if (!result.success) {
+        // 1. 部屋がない
+        if (result.error === 'not-found-room') {
           setIsCreateDialogOpen(true);
         }
+        router.refresh();
       } else {
-        // TODO: error handling
-        console.error('failed to get room');
+        setRoomName(result.body.name);
+        setRoomId(result.body.roomId);
+
+        // 2. 部屋はあるが残高がない
+        if (result.body.balance === undefined) {
+          setIsEnterNewDialogOpen(true);
+        }
+
+        // 3. 部屋も残高もある
+        if (
+          result.body.balance !== undefined &&
+          result.body.balanceLastUpdated
+        ) {
+          setIsEnterDialogOpen(true);
+        }
       }
     } finally {
       setIsLoading(false);
@@ -98,6 +116,13 @@ export default function EnterRoomForm() {
         roomName={roomName}
         open={isEnterDialogOpen}
         closeHandler={() => setIsEnterDialogOpen(false)}
+      />
+      <EnterNewRoomForm
+        roomKey={roomKey}
+        roomId={roomId}
+        roomName={roomName}
+        open={isEnterNewDialogOpen}
+        closeHandler={() => setIsEnterNewDialogOpen(false)}
       />
     </>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { createRoom } from '@/server/actions/create-room';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '../ui/button';
 import {
@@ -13,7 +14,6 @@ import {
 } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Spinner } from '../ui/spinner';
-import { useRouter } from 'next/navigation';
 
 interface Props {
   roomKey: string;

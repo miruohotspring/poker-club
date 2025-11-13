@@ -18,6 +18,7 @@ export type Room = {
 };
 
 export type ActionError =
+  | 'not-found-room'
   | 'invalid-room-key'
   | 'invalid-room-name'
   | 'internal-server-error';

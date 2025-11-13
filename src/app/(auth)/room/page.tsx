@@ -1,7 +1,9 @@
+import RoomPage from '@/components/layout/room-page';
+
 export default function Page() {
   return (
     <>
-      <h1>Welcome!</h1>
+      <RoomPage />
     </>
   );
 }

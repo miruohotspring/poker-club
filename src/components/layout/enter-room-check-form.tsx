@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 import { Button } from '../ui/button';
 import {
   Dialog,
@@ -11,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../ui/dialog';
-import { Spinner } from '../ui/spinner';
 
 interface Props {
   roomKey: string;
@@ -26,7 +24,6 @@ export default function EnterRoomCheckForm({
   open,
   closeHandler,
 }: Props) {
-  const [isLoading, setIsLoading] = useState(false);
   return (
     <Dialog open={open} onOpenChange={closeHandler}>
       <DialogContent>
@@ -36,14 +33,8 @@ export default function EnterRoomCheckForm({
         </DialogHeader>
 
         <DialogFooter className="pt-4">
-          <Button
-            type="button"
-            onClick={() => setIsLoading(true)}
-            disabled={isLoading}
-          >
-            <Link href={`/room?roomKey=${roomKey}`}>
-              {isLoading ? <Spinner /> : '部屋に入る'}
-            </Link>
+          <Button type="button">
+            <Link href={`/room?roomKey=${roomKey}`}>再入室</Link>
           </Button>
         </DialogFooter>
       </DialogContent>
