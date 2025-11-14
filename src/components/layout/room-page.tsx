@@ -59,6 +59,7 @@ export default function RoomPage() {
               balance={balance}
               updatedAt={balanceUpdatedAt}
               roomKey={roomKey}
+              roomId={roomId}
             />
           </>
         )}

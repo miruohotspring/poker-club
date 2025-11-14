@@ -7,17 +7,20 @@ import { useState } from 'react';
 import { checkRoomBalance } from '@/server/actions/check-room-balance';
 import { useRouter } from 'next/navigation';
 import { Spinner } from '../ui/spinner';
+import UpdatedBalanceForm from './update-balance-form';
 
 interface Props {
   balance: number;
   updatedAt: Date;
   roomKey: string;
+  roomId: string;
 }
 
 export default function BalanceCard(props: Props) {
   const [balance, setBalance] = useState(props.balance);
   const [updatedAt, setUpdatedAt] = useState(props.updatedAt);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
   const router = useRouter();
 
   const formattedUpdatedAt =
@@ -79,7 +82,12 @@ export default function BalanceCard(props: Props) {
           </p>
 
           <div className="space-y-3 mt-4">
-            <Button type="button" variant="outline" className="w-full">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => setIsUpdateDialogOpen(true)}
+            >
               結果を記録
             </Button>
             <Button type="button" className="w-full">
@@ -88,6 +96,12 @@ export default function BalanceCard(props: Props) {
           </div>
         </CardContent>
       </Card>
+      <UpdatedBalanceForm
+        currentBalance={balance}
+        roomId={props.roomId}
+        open={isUpdateDialogOpen}
+        closeHandler={() => setIsUpdateDialogOpen(false)}
+      />
     </>
   );
 }
