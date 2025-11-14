@@ -7,6 +7,7 @@ import { Spinner } from '../ui/spinner';
 import BalanceCard from './balance-card';
 import { BottomTabBar, type TabKey } from './bottom-tab-bar';
 import EnterNewRoomForm from './enter-new-room-form';
+import LeaderBoard from './leader-board';
 
 export default function RoomPage() {
   const searchParams = useSearchParams();
@@ -20,6 +21,24 @@ export default function RoomPage() {
   const [balance, setBalance] = useState<number>();
   const [balanceUpdatedAt, setBalanceUpdatedAt] = useState<Date>();
   const [tab, setTab] = useState<TabKey>('chips');
+
+  const TabComponents: Record<TabKey, React.ReactNode> = {
+    chips: (
+      <>
+        {balance !== undefined && balanceUpdatedAt && (
+          <BalanceCard
+            balance={balance}
+            updatedAt={balanceUpdatedAt}
+            roomKey={roomKey}
+            roomId={roomId}
+          />
+        )}
+      </>
+    ),
+    leader: <LeaderBoard roomId={roomId} />,
+    history: <></>,
+    settings: <></>,
+  };
 
   useEffect(() => {
     if (!roomKey) {
@@ -55,12 +74,7 @@ export default function RoomPage() {
             <div className="absolute top-20 left-3">
               {roomName}@{roomKey}
             </div>
-            <BalanceCard
-              balance={balance}
-              updatedAt={balanceUpdatedAt}
-              roomKey={roomKey}
-              roomId={roomId}
-            />
+            {TabComponents[tab]}
             <BottomTabBar active={tab} onSelect={setTab} />
           </>
         )}
