@@ -1,5 +1,6 @@
 'use client';
 
+import { updateBalance } from '@/server/actions/update-balance';
 import { useMemo, useState } from 'react';
 import { Button } from '../ui/button';
 import {
@@ -12,7 +13,6 @@ import {
 } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Spinner } from '../ui/spinner';
-import { updateBalance } from '@/server/actions/update-balance';
 
 interface Props {
   currentBalance: number;
@@ -74,6 +74,7 @@ export default function UpdatedBalanceForm({
               type="number"
               inputMode="numeric"
               autoComplete="off"
+              className="text-center"
               min={0}
               step={1}
               value={newBalanceInput}

@@ -1,12 +1,13 @@
 'use client';
 
+import { checkRoomBalance } from '@/server/actions/check-room-balance';
 import { RotateCw } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { useState } from 'react';
-import { checkRoomBalance } from '@/server/actions/check-room-balance';
-import { useRouter } from 'next/navigation';
 import { Spinner } from '../ui/spinner';
+import BuyInForm from './buy-in-form';
 import UpdatedBalanceForm from './update-balance-form';
 
 interface Props {
@@ -21,6 +22,7 @@ export default function BalanceCard(props: Props) {
   const [updatedAt, setUpdatedAt] = useState(props.updatedAt);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+  const [isBuyInDialogOpen, setBuyInDialogOpen] = useState(false);
   const router = useRouter();
 
   const formattedUpdatedAt =
@@ -90,7 +92,12 @@ export default function BalanceCard(props: Props) {
             >
               結果を記録
             </Button>
-            <Button type="button" className="w-full">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => setBuyInDialogOpen(true)}
+            >
               Buy-In
             </Button>
           </div>
@@ -101,6 +108,11 @@ export default function BalanceCard(props: Props) {
         roomId={props.roomId}
         open={isUpdateDialogOpen}
         closeHandler={() => setIsUpdateDialogOpen(false)}
+      />
+      <BuyInForm
+        roomId={props.roomId}
+        open={isBuyInDialogOpen}
+        closeHandler={() => setBuyInDialogOpen(false)}
       />
     </>
   );

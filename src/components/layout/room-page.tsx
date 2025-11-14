@@ -4,9 +4,9 @@ import { checkRoomBalance } from '@/server/actions/check-room-balance';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Spinner } from '../ui/spinner';
-import EnterNewRoomForm from './enter-new-room-form';
 import BalanceCard from './balance-card';
 import { BottomTabBar, type TabKey } from './bottom-tab-bar';
+import EnterNewRoomForm from './enter-new-room-form';
 
 export default function RoomPage() {
   const searchParams = useSearchParams();

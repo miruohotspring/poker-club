@@ -1,12 +1,12 @@
 'use server';
 
-import { getServerSession } from 'next-auth';
-import { GetCommand, UpdateCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
-import { v4 as uuid } from 'uuid';
 import { options } from '@/app/api/auth/[...nextauth]/options';
 import { docClient } from '@/lib/dynamo';
-import type { ActionResult } from './type';
+import { GetCommand, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
+import { v4 as uuid } from 'uuid';
+import type { ActionResult } from './type';
 
 interface UpdateBalanceArgs {
   roomId: string;
