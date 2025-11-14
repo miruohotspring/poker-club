@@ -1,5 +1,6 @@
 'use client';
 
+import { buyInAction } from '@/server/actions/buy-in';
 import { useMemo, useState } from 'react';
 import { Button } from '../ui/button';
 import {
@@ -12,7 +13,6 @@ import {
 } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Spinner } from '../ui/spinner';
-import { buyInAction } from '@/server/actions/buy-in';
 
 interface Props {
   roomId: string;
