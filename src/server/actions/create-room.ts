@@ -80,6 +80,7 @@ export async function createRoom(
                 roomId,
                 userId,
                 balance: 0,
+                userName: session.user.email,
 
                 gsi2pk: `USER#${userId}`,
                 gsi2sk: `JOINED_AT#${isoNow}#ROOM#${roomId}`,

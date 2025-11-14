@@ -1,5 +1,6 @@
 'use client';
 
+import { getLeaderBoard } from '@/server/actions/get-leaderboard';
 import { Crown, RotateCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
@@ -24,14 +25,10 @@ export default function LeaderboardCard({ roomId }: Props) {
   async function fetchLeaderboard() {
     setIsLoading(true);
     try {
-      const sampleData: LeaderboardEntry[] = [
-        { rank: 1, name: 'John Doe', chips: 10000 },
-        { rank: 2, name: 'Alice', chips: 5000 },
-        { rank: 3, name: 'Bob', chips: 3500 },
-        { rank: 4, name: 'Charlie', chips: 2800 },
-        { rank: 5, name: 'Diana', chips: 2100 },
-      ];
-      setLeaderboard(sampleData);
+      const result = await getLeaderBoard(roomId);
+      if (result.success) {
+        setLeaderboard(result.body);
+      }
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error);
     } finally {
@@ -45,7 +42,7 @@ export default function LeaderboardCard({ roomId }: Props) {
   }, []);
 
   return (
-    <Card className="gap-0 w-full max-w-md mx-auto rounded-2xl shadow-md mt-6">
+    <Card className="gap-0 w-full max-w-md mx-auto rounded-2xl shadow-md mt-6 min-h-[60vh]">
       <div className="flex justify-end px-6 relative">
         <Button
           type="button"
