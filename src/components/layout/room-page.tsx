@@ -61,6 +61,7 @@ export default function RoomPage() {
               roomKey={roomKey}
               roomId={roomId}
             />
+            <BottomTabBar active={tab} onSelect={setTab} />
           </>
         )}
         <EnterNewRoomForm
@@ -74,7 +75,6 @@ export default function RoomPage() {
           onSuccess={() => location.reload()}
         />
       </div>
-      <BottomTabBar active={tab} onSelect={setTab} />
     </>
   );
 }

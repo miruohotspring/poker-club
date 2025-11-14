@@ -12,6 +12,7 @@ import {
 } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Spinner } from '../ui/spinner';
+import { buyInAction } from '@/server/actions/buy-in';
 
 interface Props {
   roomId: string;
@@ -56,12 +57,12 @@ export default function BuyInForm({ roomId, open, closeHandler }: Props) {
 
     setIsLoading(true);
     try {
-      // TODO: buy-in
-      // const result = await updateBalance({
-      //   roomId,
-      //   newBalance: newBalance,
-      // });
-      // console.log(result);
+      const result = await buyInAction({
+        roomId,
+        amount: amount,
+        buyIn: buyin,
+      });
+      console.log(result);
       closeHandler();
     } finally {
       setIsLoading(false);
