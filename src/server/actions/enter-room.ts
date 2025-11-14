@@ -37,6 +37,7 @@ export async function enterRoom(
 
               roomId,
               userId,
+              userName: session.user.email,
               balance: 0,
 
               gsi2pk: `USER#${userId}`,
