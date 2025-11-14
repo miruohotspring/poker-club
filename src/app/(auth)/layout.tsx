@@ -2,7 +2,6 @@ import { AuthProvider } from '@/auth-provider';
 import { Header } from '@/components/layout/header';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
-// app/(auth)/layout.tsx
 import type { ReactNode } from 'react';
 
 export default async function Layout({

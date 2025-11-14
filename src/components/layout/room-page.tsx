@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Spinner } from '../ui/spinner';
 import EnterNewRoomForm from './enter-new-room-form';
+import BalanceCard from './balance-card';
 
 export default function RoomPage() {
   const searchParams = useSearchParams();
@@ -47,11 +48,17 @@ export default function RoomPage() {
     <>
       <div className="h-full flex items-center justify-center px-4 pb-14">
         {isLoading && <Spinner />}
-        {!isLoading && (
-          <div>
-            <p>残高: {balance}</p>
-            <p>更新日: {balanceUpdatedAt?.toLocaleDateString()}</p>
-          </div>
+        {!isLoading && balance !== undefined && balanceUpdatedAt && (
+          <>
+            <div className="absolute top-20 left-3">
+              {roomName}@{roomKey}
+            </div>
+            <BalanceCard
+              balance={balance}
+              updatedAt={balanceUpdatedAt}
+              roomKey={roomKey}
+            />
+          </>
         )}
         <EnterNewRoomForm
           roomKey={roomKey}
