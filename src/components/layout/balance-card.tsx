@@ -102,7 +102,7 @@ export default function BalanceCard(props: Props) {
               className="w-full"
               onClick={() => setIsUpdateDialogOpen(true)}
             >
-              結果を記録
+              残高を更新
             </Button>
             <Button
               type="button"

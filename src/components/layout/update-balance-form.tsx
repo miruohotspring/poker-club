@@ -61,7 +61,7 @@ export default function UpdatedBalanceForm({
     <Dialog open={open} onOpenChange={closeHandler}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>結果を記録</DialogTitle>
+          <DialogTitle>残高を更新</DialogTitle>
           <DialogDescription>
             新しい残高を入力して残高を更新します。
           </DialogDescription>
