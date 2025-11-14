@@ -6,10 +6,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Skeleton } from '../ui/skeleton';
 import { Spinner } from '../ui/spinner';
 import BuyInForm from './buy-in-form';
 import UpdatedBalanceForm from './update-balance-form';
-import { Skeleton } from '../ui/skeleton';
 
 interface Props {
   balance: number;

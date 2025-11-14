@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
 import { RotateCcw } from 'lucide-react';
+import { useEffect, useState, useTransition } from 'react';
 
-import { getTransactions } from '@/server/actions/get-transactions';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { getTransactions } from '@/server/actions/get-transactions';
 import { Spinner } from '../ui/spinner';
 
 type TransactionType = 'BUY' | 'UPDATE';

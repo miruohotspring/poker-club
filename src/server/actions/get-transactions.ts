@@ -1,7 +1,7 @@
 'use server';
 
-import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { docClient } from '@/lib/dynamo';
+import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import type { ActionResult } from './type';
 
 const TABLE_NAME = process.env.POKER_APP_TABLE;
