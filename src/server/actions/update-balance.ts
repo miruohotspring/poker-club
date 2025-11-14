@@ -58,7 +58,7 @@ export async function updateBalance({
         Key: { pk, sk },
         UpdateExpression: `
         SET balance = :newBalance,
-            balanceLastUpdated = :updatedAt
+            updatedAt = :updatedAt
       `,
         ExpressionAttributeValues: {
           ':newBalance': newBalance,
@@ -100,7 +100,8 @@ export async function updateBalance({
       success: true,
       body: undefined,
     };
-  } catch {
+  } catch (e) {
+    console.log(e);
     return {
       success: false,
       error: 'internal-server-error',
