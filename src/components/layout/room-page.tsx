@@ -8,6 +8,7 @@ import BalanceCard from './balance-card';
 import { BottomTabBar, type TabKey } from './bottom-tab-bar';
 import EnterNewRoomForm from './enter-new-room-form';
 import LeaderBoard from './leader-board';
+import { TransactionListCard } from './transactions';
 
 export default function RoomPage() {
   const searchParams = useSearchParams();
@@ -36,8 +37,8 @@ export default function RoomPage() {
       </>
     ),
     leader: <LeaderBoard roomId={roomId} />,
-    history: <></>,
-    settings: <></>,
+    history: <TransactionListCard roomId={roomId} />,
+    settings: <>そんなものはない</>,
   };
 
   useEffect(() => {

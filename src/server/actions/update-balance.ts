@@ -80,6 +80,7 @@ export async function updateBalance({
 
       roomId,
       userId,
+      userName: session.user.email,
       txnType: 'UPDATE',
 
       previousBalance,

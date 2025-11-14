@@ -90,6 +90,7 @@ export async function buyInAction(
 
       roomId,
       userId,
+      userName: session.user.email,
 
       txnType: 'BUY',
       amount, // 購入チップ数
