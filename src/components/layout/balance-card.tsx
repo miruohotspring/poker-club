@@ -3,12 +3,13 @@
 import { checkRoomBalance } from '@/server/actions/check-room-balance';
 import { RotateCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Spinner } from '../ui/spinner';
 import BuyInForm from './buy-in-form';
 import UpdatedBalanceForm from './update-balance-form';
+import { Skeleton } from '../ui/skeleton';
 
 interface Props {
   balance: number;
@@ -52,6 +53,11 @@ export default function BalanceCard(props: Props) {
     setIsLoading(false);
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    void fetchBalance();
+  }, []);
+
   return (
     <>
       <Card className="w-full max-w-md mx-auto rounded-2xl shadow-md">
@@ -72,9 +78,15 @@ export default function BalanceCard(props: Props) {
             <p className="text-center text-sm text-muted-foreground">
               現在の残高
             </p>
-            <CardTitle className="text-center text-4xl font-bold tracking-widest">
-              {balance?.toLocaleString() ?? '0'}
-            </CardTitle>
+            <div className="h-12 flex items-center justify-center">
+              {isLoading ? (
+                <Skeleton className="h-8 w-[150px] mx-auto" />
+              ) : (
+                <CardTitle className="text-center text-4xl font-bold tracking-widest leading-none">
+                  {balance?.toLocaleString() ?? '0'}
+                </CardTitle>
+              )}
+            </div>
           </div>
         </CardHeader>
 
