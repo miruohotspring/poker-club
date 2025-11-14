@@ -13,11 +13,11 @@ interface BottomTabBarProps {
 export function BottomTabBar({ active, onSelect }: BottomTabBarProps) {
   return (
     // 画面下に「浮いた」感じで中央寄せ
-    <nav className="fixed inset-x-0 bottom-20 flex justify-center">
+    <nav className="fixed inset-x-0 bottom-4 px-4 flex justify-center">
       <Tabs
         value={active}
         onValueChange={(val) => onSelect?.(val as TabKey)}
-        className="w-auto"
+        className="w-full"
       >
         {/* ここが 2 枚目スクショの「丸い台座」 */}
         <TabsList
@@ -25,6 +25,7 @@ export function BottomTabBar({ active, onSelect }: BottomTabBarProps) {
             'inline-flex items-center justify-center gap-1',
             'rounded-sm bg-muted px-1 py-1',
             'text-muted-foreground',
+            'w-full',
           )}
         >
           <TabsTrigger value="chips" className={tabTriggerClass}>
