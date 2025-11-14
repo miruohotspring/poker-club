@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Spinner } from '../ui/spinner';
 import EnterNewRoomForm from './enter-new-room-form';
 import BalanceCard from './balance-card';
+import { BottomTabBar, type TabKey } from './bottom-tab-bar';
 
 export default function RoomPage() {
   const searchParams = useSearchParams();
@@ -18,6 +19,7 @@ export default function RoomPage() {
   const [roomName, setRoomName] = useState('');
   const [balance, setBalance] = useState<number>();
   const [balanceUpdatedAt, setBalanceUpdatedAt] = useState<Date>();
+  const [tab, setTab] = useState<TabKey>('chips');
 
   useEffect(() => {
     if (!roomKey) {
@@ -71,6 +73,7 @@ export default function RoomPage() {
           onSuccess={() => location.reload()}
         />
       </div>
+      <BottomTabBar active={tab} onSelect={setTab} />
     </>
   );
 }
