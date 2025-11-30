@@ -20,6 +20,7 @@ export type Room = {
 export type ActionError =
   | 'not-found-room'
   | 'not-found-balance'
+  | 'not-enough-balance'
   | 'invalid-room-key'
   | 'invalid-room-name'
   | 'internal-server-error';

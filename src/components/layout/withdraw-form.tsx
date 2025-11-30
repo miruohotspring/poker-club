@@ -21,7 +21,7 @@ interface Props {
   closeHandler: () => void;
 }
 
-export default function UpdatedBalanceForm({
+export default function WithdrawForm({
   currentBalance,
   roomId,
   open,
@@ -47,7 +47,7 @@ export default function UpdatedBalanceForm({
       await updateBalance({
         roomId,
         amount: newBalance,
-        type: 'DEPOSIT',
+        type: 'WITHDRAW',
       });
       closeHandler();
     } finally {
@@ -60,16 +60,16 @@ export default function UpdatedBalanceForm({
     <Dialog open={open} onOpenChange={closeHandler}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>預け入れ</DialogTitle>
+          <DialogTitle>引き出し</DialogTitle>
           <DialogDescription>
-            預け入れるチップ数を入力して残高を更新します。
+            引き出すチップ数を入力して残高を更新します。
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2 pt-2">
           <div className="space-y-1">
             <Input
-              placeholder="預け入れ額"
+              placeholder="引き出し額"
               type="number"
               inputMode="numeric"
               autoComplete="off"
@@ -95,7 +95,7 @@ export default function UpdatedBalanceForm({
             onClick={handleUpdateBalance}
             disabled={isLoading || !isValid}
           >
-            {isLoading ? <Spinner /> : '預け入れる'}
+            {isLoading ? <Spinner /> : '引き出す'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -179,10 +179,13 @@ type TransactionItemProps = {
 function TransactionItem({ transaction }: TransactionItemProps) {
   const delta = transaction.updatedBalance - transaction.previousBalance;
 
+  const updateType =
+    delta > 0 ? 'DEPOSIT' : delta < 0 ? 'WITHDRAW' : 'NOCHANGE';
+
   const balanceClass =
-    delta > 0
+    updateType === 'DEPOSIT'
       ? 'text-green-400'
-      : delta < 0
+      : updateType === 'WITHDRAW'
         ? 'text-red-400'
         : 'text-muted-foreground';
 
@@ -201,6 +204,10 @@ function TransactionItem({ transaction }: TransactionItemProps) {
           <span className="font-bold">{transaction.userName}</span>
           {transaction.type === 'BUY' ? (
             <> が ¥{formatYen(transaction.buyInAmount ?? 0)} Buy-In</>
+          ) : updateType === 'DEPOSIT' ? (
+            <> が 預け入れ</>
+          ) : updateType === 'WITHDRAW' ? (
+            <> が 引き出し</>
           ) : (
             <> が 残高を更新</>
           )}

@@ -10,6 +10,7 @@ import { Skeleton } from '../ui/skeleton';
 import { Spinner } from '../ui/spinner';
 import BuyInForm from './buy-in-form';
 import UpdatedBalanceForm from './update-balance-form';
+import WithdrawForm from './withdraw-form';
 
 interface Props {
   balance: number;
@@ -23,6 +24,7 @@ export default function BalanceCard(props: Props) {
   const [updatedAt, setUpdatedAt] = useState(props.updatedAt);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+  const [isWithdrawDialogOpen, setIsWithdrawDialogOpen] = useState(false);
   const [isBuyInDialogOpen, setBuyInDialogOpen] = useState(false);
   const router = useRouter();
 
@@ -96,14 +98,24 @@ export default function BalanceCard(props: Props) {
           </p>
 
           <div className="space-y-3 mt-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => setIsUpdateDialogOpen(true)}
-            >
-              残高を更新
-            </Button>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsUpdateDialogOpen(true)}
+              >
+                預け入れ
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsWithdrawDialogOpen(true)}
+              >
+                引き出し
+              </Button>
+            </div>
             <Button
               type="button"
               variant="outline"
@@ -120,6 +132,12 @@ export default function BalanceCard(props: Props) {
         roomId={props.roomId}
         open={isUpdateDialogOpen}
         closeHandler={() => setIsUpdateDialogOpen(false)}
+      />
+      <WithdrawForm
+        currentBalance={balance}
+        roomId={props.roomId}
+        open={isWithdrawDialogOpen}
+        closeHandler={() => setIsWithdrawDialogOpen(false)}
       />
       <BuyInForm
         roomId={props.roomId}

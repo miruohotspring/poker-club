@@ -10,12 +10,14 @@ import type { ActionResult } from './type';
 
 interface UpdateBalanceArgs {
   roomId: string;
-  newBalance: number;
+  amount: number;
+  type: 'DEPOSIT' | 'WITHDRAW';
 }
 
 export async function updateBalance({
   roomId,
-  newBalance,
+  amount,
+  type,
 }: UpdateBalanceArgs): Promise<ActionResult<void>> {
   const session = await getServerSession(options);
   if (!session?.user?.id) {
@@ -46,6 +48,16 @@ export async function updateBalance({
     }
 
     const previousBalance = getRes.Item.balance ?? 0;
+    const newBalance =
+      type === 'DEPOSIT' ? previousBalance + amount : previousBalance - amount;
+
+    // 残高不足
+    if (newBalance < 0) {
+      return {
+        success: false,
+        error: 'not-enough-balance',
+      };
+    }
 
     // ===============================
     // 2. 残高を更新
