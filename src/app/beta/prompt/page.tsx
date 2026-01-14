@@ -117,7 +117,7 @@ export default function PromptBuilderPage() {
   const resetHand = useCallback(
     (nextButtonSeat: number, nextStacks: number[], nextPlayerCount: number) => {
       const clearedHistory = createEmptyHistory();
-      const { potBase, updatedStacks } = postBlinds(
+      const { potBase, updatedStacks, sbSeat, bbSeat } = postBlinds(
         nextStacks,
         nextPlayerCount,
         nextButtonSeat,
@@ -125,6 +125,16 @@ export default function PromptBuilderPage() {
         bb,
         ante,
       );
+      const initialContributions = Array.from(
+        { length: nextPlayerCount },
+        () => 0,
+      );
+      if (sb > 0) {
+        initialContributions[sbSeat - 1] = sb;
+      }
+      if (bb > 0) {
+        initialContributions[bbSeat - 1] = bb;
+      }
 
       setButtonSeat(nextButtonSeat);
       setStacks(updatedStacks);
@@ -132,7 +142,7 @@ export default function PromptBuilderPage() {
       setBoard('');
       setPot(potBase);
       setStreetTotal(0);
-      setContributions(Array.from({ length: nextPlayerCount }, () => 0));
+      setContributions(initialContributions);
       setFolded(Array.from({ length: nextPlayerCount }, () => false));
       setPendingPlayers(
         Array.from({ length: nextPlayerCount }, (_, index) => index),
