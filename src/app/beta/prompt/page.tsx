@@ -270,8 +270,18 @@ export default function PromptBuilderPage() {
       case 'ベット':
       case 'レイズ': {
         const parsedAmount = Number(actionAmount);
-        amount = Number.isFinite(parsedAmount) ? Math.max(0, parsedAmount) : 0;
-        historyLine = `${position}#${selectedAction}/${amount}点`;
+        const normalizedAmount = Number.isFinite(parsedAmount)
+          ? Math.max(0, parsedAmount)
+          : 0;
+        if (selectedAction === 'レイズ') {
+          amount = Math.max(
+            0,
+            normalizedAmount - updatedContributions[playerIndex],
+          );
+        } else {
+          amount = normalizedAmount;
+        }
+        historyLine = `${position}#${selectedAction}/${normalizedAmount}点`;
         break;
       }
       default:
@@ -298,14 +308,23 @@ export default function PromptBuilderPage() {
       (index) => index !== playerIndex,
     );
     if (selectedAction === 'ベット' || selectedAction === 'レイズ') {
-      updatedPendingPlayers = actionOrder
+      const raiserIndex = actionOrder.indexOf(playerIndex);
+      const orderedAfterRaiser =
+        raiserIndex >= 0
+          ? [
+              ...actionOrder.slice(raiserIndex + 1),
+              ...actionOrder.slice(0, raiserIndex + 1),
+            ]
+          : actionOrder;
+      updatedPendingPlayers = orderedAfterRaiser
         .filter((index) => activePlayers.includes(index))
         .filter((index) => index !== playerIndex);
     }
 
+    const updatedMaxContribution = Math.max(...updatedContributions);
     const contributionsMatch = activePlayers.length
       ? activePlayers.every(
-          (index) => updatedContributions[index] === maxContribution,
+          (index) => updatedContributions[index] === updatedMaxContribution,
         )
       : true;
 
