@@ -40,6 +40,28 @@ const createEmptyHistory = () => streetLabels.map(() => [] as string[]);
 const getNextSeat = (seat: number, total: number) =>
   seat === total ? 1 : seat + 1;
 
+const buildActionOrder = (
+  playerCount: number,
+  buttonSeat: number,
+  streetIndex: number,
+) => {
+  const sbSeat =
+    playerCount === 2 ? buttonSeat : getNextSeat(buttonSeat, playerCount);
+  const bbSeat =
+    playerCount === 2
+      ? getNextSeat(buttonSeat, playerCount)
+      : getNextSeat(sbSeat, playerCount);
+  const isPreflop = streetIndex === 0;
+  const startSeat = isPreflop
+    ? getNextSeat(bbSeat, playerCount)
+    : getNextSeat(buttonSeat, playerCount);
+
+  return Array.from({ length: playerCount }, (_, offset) => {
+    const seatNumber = ((startSeat - 1 + offset) % playerCount) + 1;
+    return seatNumber - 1;
+  });
+};
+
 const postBlinds = (
   stacks: number[],
   playerCount: number,
@@ -103,7 +125,7 @@ export default function PromptBuilderPage() {
   const [actionAmount, setActionAmount] = useState('');
   const [showdownOpen, setShowdownOpen] = useState(false);
   const [showdownWinner, setShowdownWinner] = useState(0);
-  const [promptSeat, setPromptSeat] = useState(1);
+  const [currentActor, setCurrentActor] = useState<number | null>(null);
 
   const positions = useMemo(() => {
     const template = positionTemplates[playerCount] ?? positionTemplates[6];
@@ -113,6 +135,11 @@ export default function PromptBuilderPage() {
       return template[relativeIndex];
     });
   }, [buttonSeat, playerCount]);
+
+  const actionOrder = useMemo(
+    () => buildActionOrder(playerCount, buttonSeat, streetIndex),
+    [buttonSeat, playerCount, streetIndex],
+  );
 
   const resetHand = useCallback(
     (nextButtonSeat: number, nextStacks: number[], nextPlayerCount: number) => {
@@ -144,9 +171,13 @@ export default function PromptBuilderPage() {
       setStreetTotal(0);
       setContributions(initialContributions);
       setFolded(Array.from({ length: nextPlayerCount }, () => false));
-      setPendingPlayers(
-        Array.from({ length: nextPlayerCount }, (_, index) => index),
+      const orderedPlayers = buildActionOrder(
+        nextPlayerCount,
+        nextButtonSeat,
+        0,
       );
+      setPendingPlayers(orderedPlayers);
+      setCurrentActor(orderedPlayers[0] ?? null);
       setActionHistory(clearedHistory);
     },
     [ante, bb, sb],
@@ -161,22 +192,32 @@ export default function PromptBuilderPage() {
       const newStacks = defaultStacks(nextPlayerCount);
       setPlayerCount(nextPlayerCount);
       resetHand(nextButtonSeat, newStacks, nextPlayerCount);
-      setPromptSeat(1);
     },
     [resetHand],
   );
 
   const advanceStreet = useCallback(
     (newPot: number, activePlayers: number[]) => {
+      const nextStreetIndex = Math.min(
+        streetIndex + 1,
+        streetLabels.length - 1,
+      );
+      const nextOrder = buildActionOrder(
+        playerCount,
+        buttonSeat,
+        nextStreetIndex,
+      );
       setPot(newPot);
       setStreetTotal(0);
       setContributions(Array.from({ length: playerCount }, () => 0));
-      setPendingPlayers(activePlayers);
-      setStreetIndex((current) =>
-        Math.min(current + 1, streetLabels.length - 1),
+      const orderedPlayers = nextOrder.filter((index) =>
+        activePlayers.includes(index),
       );
+      setPendingPlayers(orderedPlayers);
+      setCurrentActor(orderedPlayers[0] ?? null);
+      setStreetIndex(nextStreetIndex);
     },
-    [playerCount],
+    [buttonSeat, playerCount, streetIndex],
   );
 
   const handleAwardAndReset = useCallback(
@@ -257,9 +298,9 @@ export default function PromptBuilderPage() {
       (index) => index !== playerIndex,
     );
     if (selectedAction === 'ベット' || selectedAction === 'レイズ') {
-      updatedPendingPlayers = activePlayers.filter(
-        (index) => index !== playerIndex,
-      );
+      updatedPendingPlayers = actionOrder
+        .filter((index) => activePlayers.includes(index))
+        .filter((index) => index !== playerIndex);
     }
 
     const contributionsMatch = activePlayers.length
@@ -272,6 +313,7 @@ export default function PromptBuilderPage() {
     setContributions(updatedContributions);
     setFolded(updatedFolded);
     setPendingPlayers(updatedPendingPlayers);
+    setCurrentActor(updatedPendingPlayers[0] ?? null);
     setActionHistory(updatedHistory);
     setStreetTotal(newStreetTotal);
     setSelectedPlayer(null);
@@ -294,6 +336,7 @@ export default function PromptBuilderPage() {
   }, [
     actionAmount,
     actionHistory,
+    actionOrder,
     advanceStreet,
     contributions,
     folded,
@@ -323,11 +366,11 @@ export default function PromptBuilderPage() {
       .filter(Boolean)
       .join('\n');
 
-    const seatIndex = promptSeat - 1;
+    const seatIndex = currentActor ?? 0;
     const seatPosition = positions[seatIndex] ?? '';
 
     return [
-      `席位置:${promptSeat}`,
+      `席位置:${seatIndex + 1}`,
       `あなたのポジション: ${seatPosition}`,
       `現在のストリート: ${streetLabels[streetIndex]}`,
       `ボード: ${streetIndex === 0 ? 'なし' : board || '未入力'}`,
@@ -336,7 +379,7 @@ export default function PromptBuilderPage() {
       'アクション履歴:',
       historySections || '（まだアクションがありません）',
     ].join('\n');
-  }, [actionHistory, board, positions, pot, promptSeat, stacks, streetIndex]);
+  }, [actionHistory, board, currentActor, positions, pot, stacks, streetIndex]);
 
   const handleCopy = useCallback(async () => {
     await navigator.clipboard.writeText(promptText);
@@ -522,6 +565,10 @@ export default function PromptBuilderPage() {
                       <p className="text-muted-foreground text-xs">
                         フォールド済み
                       </p>
+                    ) : currentActor === index ? (
+                      <p className="text-primary text-xs font-semibold">
+                        次のアクション
+                      </p>
                     ) : (
                       <p className="text-muted-foreground text-xs">
                         ストリート貢献: {contributions[index]}
@@ -530,7 +577,7 @@ export default function PromptBuilderPage() {
                   </div>
                   <Button
                     variant={folded[index] ? 'secondary' : 'default'}
-                    disabled={folded[index]}
+                    disabled={folded[index] || currentActor !== index}
                     onClick={() => {
                       setSelectedPlayer(index);
                       setSelectedAction('フォールド');
@@ -572,20 +619,10 @@ export default function PromptBuilderPage() {
         <div className="rounded-lg border p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold">プロンプト</h2>
-            <div className="flex items-center gap-2">
-              <Label htmlFor="prompt-seat">対象席</Label>
-              <select
-                id="prompt-seat"
-                className="border-input bg-background focus-visible:ring-ring h-10 rounded-md border px-2 text-sm shadow-sm focus-visible:ring-2 focus-visible:outline-none"
-                value={promptSeat}
-                onChange={(event) => setPromptSeat(Number(event.target.value))}
-              >
-                {Array.from({ length: playerCount }, (_, index) => (
-                  <option key={index} value={index + 1}>
-                    席 {index + 1}
-                  </option>
-                ))}
-              </select>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>
+                対象席: 席 {currentActor !== null ? currentActor + 1 : '-'}
+              </span>
             </div>
           </div>
           <textarea
