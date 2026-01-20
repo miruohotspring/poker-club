@@ -27,6 +27,7 @@ export type PreflopQuestion = {
   handDisplay: string;
   actions: ActionFrequency[];
   preflopActions: string;
+  historySpot: number;
 };
 
 const positions = ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'] as const;
@@ -187,6 +188,7 @@ export const getPreflopQuestion = async (): Promise<PreflopQuestion> => {
   }));
   const preflopActions =
     pickedRow.preflopActions === 'ROOT' ? '' : pickedRow.preflopActions;
+  const historySpot = preflopActions ? preflopActions.split('-').length : 0;
 
   return {
     position,
@@ -194,5 +196,6 @@ export const getPreflopQuestion = async (): Promise<PreflopQuestion> => {
     handDisplay: buildHandDisplay(handLabel),
     actions,
     preflopActions,
+    historySpot,
   };
 };

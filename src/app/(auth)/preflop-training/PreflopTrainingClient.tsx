@@ -149,7 +149,7 @@ export default function PreflopTrainingClient({ initialQuestion }: Props) {
                   className="block text-center text-sm font-semibold text-slate-300 underline"
                   href={`https://app.gtowizard.com/solutions?gametype=Cash6m50zGeneral25Open&depth=100&soltab=strategy&solution_type=gwiz&gmfs_solution_tab=ai_sols&gmfft_sort_key=0&gmfft_sort_order=desc&preflop_actions=${encodeURIComponent(
                     question.preflopActions,
-                  )}&history_spot=0&stratab=overview_range&gmff_depth=100&gmff_rake=NL50&gmff_opening_size=25x&gmff__3bet_size=gto`}
+                  )}&history_spot=${question.historySpot}&stratab=overview_range&gmff_depth=100&gmff_rake=NL50&gmff_opening_size=25x&gmff__3bet_size=gto`}
                   rel="noreferrer"
                   target="_blank"
                 >
