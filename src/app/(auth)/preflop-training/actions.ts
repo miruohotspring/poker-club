@@ -171,9 +171,9 @@ export const getPreflopQuestion = async (): Promise<PreflopQuestion> => {
       (player) => player.player?.position === position,
     ) ?? spotJson.players_info[0];
   const handCounters = matchingPlayerInfo?.simple_hand_counters ?? {};
-  const availableHands = handLabels.filter(
-    (hand) => (handCounters[hand]?.total_frequency ?? 0) > 0,
-  );
+  const availableHands = Object.entries(handCounters)
+    .filter(([, counter]) => (counter?.total_frequency ?? 0) > 0)
+    .map(([hand]) => hand);
   const handLabel =
     availableHands[Math.floor(Math.random() * availableHands.length)] ??
     handLabels[0] ??
