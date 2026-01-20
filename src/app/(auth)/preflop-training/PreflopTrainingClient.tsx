@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -30,6 +31,7 @@ export default function PreflopTrainingClient({ initialQuestion }: Props) {
   const [result, setResult] = useState<ResultState | null>(null);
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const handleSelect = (actionLabel: string, frequency: number) => {
     setResult({ selectedAction: actionLabel, selectedFrequency: frequency });
@@ -168,6 +170,15 @@ export default function PreflopTrainingClient({ initialQuestion }: Props) {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <Button
+          className="self-center text-xs text-slate-300 hover:text-slate-100"
+          variant="ghost"
+          size="sm"
+          onClick={() => router.back()}
+        >
+          前のページに戻る
+        </Button>
       </div>
     </div>
   );
