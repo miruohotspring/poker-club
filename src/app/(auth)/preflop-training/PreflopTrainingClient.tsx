@@ -46,38 +46,38 @@ export default function PreflopTrainingClient({ initialQuestion }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-6 text-slate-100">
+    <div className="min-h-screen bg-black px-4 py-6 text-slate-100">
       <div className="mx-auto flex w-full max-w-md flex-col gap-6">
-        <header className="rounded-2xl bg-slate-900 px-5 py-4 text-white shadow">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-300">
+        <header className="rounded-2xl border border-slate-800 bg-slate-950 px-5 py-4 text-white shadow">
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
             Preflop Spot Training
           </p>
           <h1 className="mt-2 text-2xl font-semibold">NL50 6max 100bb</h1>
-          <p className="mt-1 text-sm text-slate-200">2.5x Open / 6max Cash</p>
+          <p className="mt-1 text-sm text-slate-300">2.5x Open / 6max Cash</p>
         </header>
 
-        <section className="rounded-2xl border border-slate-800 bg-slate-900 px-5 py-5 shadow-sm">
+        <section className="rounded-2xl border border-slate-800 bg-slate-950 px-5 py-5 shadow-sm">
           <div className="flex items-center justify-between text-sm text-slate-400">
-            <span className="font-semibold text-slate-100">
+            <span className="font-semibold text-slate-50">
               {question.position}
             </span>
           </div>
           {question.spotLabel && (
-            <div className="mt-2 text-sm text-slate-300">
+            <div className="mt-2 text-sm text-slate-400">
               {question.spotLabel}
             </div>
           )}
-          <div className="mt-4 flex items-center justify-between rounded-xl bg-slate-800 px-4 py-3">
+          <div className="mt-4 flex items-center justify-between rounded-xl bg-slate-900 px-4 py-3">
             <div>
-              <p className="text-xs text-slate-400">ハンド</p>
+              <p className="text-xs text-slate-500">ハンド</p>
             </div>
-            <div className="text-2xl font-semibold text-slate-100">
+            <div className="text-2xl font-semibold text-slate-50">
               {question.handDisplay}
             </div>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-slate-800 bg-slate-900 px-5 py-5 shadow-sm">
+        <section className="rounded-2xl border border-slate-800 bg-slate-950 px-5 py-5 shadow-sm">
           <h2 className="text-sm font-semibold text-slate-200">
             あなたのアクションは？
           </h2>
@@ -85,7 +85,7 @@ export default function PreflopTrainingClient({ initialQuestion }: Props) {
             {question.actions.map((action) => (
               <Button
                 key={action.label}
-                className="w-full justify-between border-slate-700 bg-slate-950 text-slate-100 hover:bg-slate-800"
+                className="w-full justify-between border-slate-700 bg-slate-900 text-slate-100 hover:bg-slate-800"
                 variant="outline"
                 onClick={() => handleSelect(action.label, action.frequency)}
               >
@@ -105,14 +105,14 @@ export default function PreflopTrainingClient({ initialQuestion }: Props) {
               <div className="space-y-4">
                 <div className="rounded-lg bg-slate-900 p-3">
                   <p className="text-xs text-slate-400">あなたの選択</p>
-                  <p className="text-lg font-semibold text-slate-100">
+                  <p className="text-lg font-semibold text-slate-50">
                     {result.selectedAction}
                   </p>
                   <p
                     className={`text-sm font-semibold ${
                       result.selectedFrequency > 0
-                        ? 'text-emerald-600'
-                        : 'text-rose-600'
+                        ? 'text-emerald-400'
+                        : 'text-rose-400'
                     }`}
                   >
                     {result.selectedFrequency > 0
@@ -127,13 +127,13 @@ export default function PreflopTrainingClient({ initialQuestion }: Props) {
                     <div key={action.label} className="space-y-1">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-300">{action.label}</span>
-                        <span className="font-semibold text-slate-100">
+                        <span className="font-semibold text-slate-50">
                           {formatPercent(action.frequency)}
                         </span>
                       </div>
                       <div className="h-2 w-full rounded-full bg-slate-800">
                         <div
-                          className="h-2 rounded-full bg-emerald-400"
+                          className="h-2 rounded-full bg-slate-500"
                           style={{
                             width: `${Math.min(
                               100,
