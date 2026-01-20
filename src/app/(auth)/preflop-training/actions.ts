@@ -161,11 +161,16 @@ export const getPreflopQuestion = async (): Promise<PreflopQuestion> => {
       strategy?: number[];
     }>;
     players_info: Array<{
+      player?: { position?: string };
       range?: number[];
       simple_hand_counters?: Record<string, SimpleHandCounter>;
     }>;
   };
-  const handCounters = spotJson.players_info[0]?.simple_hand_counters ?? {};
+  const matchingPlayerInfo =
+    spotJson.players_info.find(
+      (player) => player.player?.position === position,
+    ) ?? spotJson.players_info[0];
+  const handCounters = matchingPlayerInfo?.simple_hand_counters ?? {};
   const availableHands = handLabels.filter(
     (hand) => (handCounters[hand]?.total_frequency ?? 0) > 0,
   );
