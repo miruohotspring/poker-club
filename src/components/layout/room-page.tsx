@@ -1,6 +1,7 @@
 'use client';
 
 import { checkRoomBalance } from '@/server/actions/check-room-balance';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Spinner } from '../ui/spinner';
@@ -38,7 +39,17 @@ export default function RoomPage() {
     ),
     leader: <LeaderBoard roomId={roomId} />,
     history: <TransactionListCard roomId={roomId} />,
-    settings: <>そんなものはない</>,
+    settings: (
+      <div className="w-full max-w-md space-y-2">
+        <p className="text-sm font-semibold text-muted-foreground">ベータ版機能</p>
+        <Link
+          href="/preflop-training"
+          className="block rounded-lg border border-dashed border-muted-foreground/40 px-4 py-3 text-sm font-medium text-foreground transition hover:border-muted-foreground hover:bg-muted"
+        >
+          /preflop-training
+        </Link>
+      </div>
+    ),
   };
 
   useEffect(() => {
