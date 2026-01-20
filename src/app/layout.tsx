@@ -16,6 +16,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'ポーカークラブ',
   description: "Let's play poker!",
+  manifest: '/manifest.json',
+  themeColor: '#000000',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'ポーカークラブ',
+  },
+  icons: undefined,
 };
 
 export default function RootLayout({
