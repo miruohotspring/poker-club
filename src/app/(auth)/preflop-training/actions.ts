@@ -16,6 +16,11 @@ type ActionFrequency = {
   frequency: number;
 };
 
+type SimpleHandCounter = {
+  total_frequency?: number;
+  actions_total_frequencies?: Record<string, number>;
+};
+
 export type PreflopQuestion = {
   position: string;
   spotLabel: string;
@@ -147,23 +152,33 @@ export const getPreflopQuestion = async (): Promise<PreflopQuestion> => {
   );
   const spotJson = JSON.parse(await fs.readFile(jsonPath, 'utf-8')) as {
     action_solutions: Array<{
-      action: { type?: string; betsize?: string | null; display_name?: string };
-      strategy: number[];
+      action: {
+        code?: string;
+        type?: string;
+        betsize?: string | null;
+        display_name?: string;
+      };
+      strategy?: number[];
     }>;
-    players_info: Array<{ range: number[] }>;
+    players_info: Array<{
+      range?: number[];
+      simple_hand_counters?: Record<string, SimpleHandCounter>;
+    }>;
   };
-  const range = spotJson.players_info[0]?.range ?? [];
-  const availableIndexes = range
-    .map((value, index) => (value > 0 ? index : -1))
-    .filter((index) => index >= 0);
-  const pickedIndex =
-    availableIndexes.length > 0
-      ? availableIndexes[Math.floor(Math.random() * availableIndexes.length)]
-      : 0;
-  const handLabel = handLabels[pickedIndex] ?? '??';
+  const handCounters = spotJson.players_info[0]?.simple_hand_counters ?? {};
+  const availableHands = handLabels.filter(
+    (hand) => (handCounters[hand]?.total_frequency ?? 0) > 0,
+  );
+  const handLabel =
+    availableHands[Math.floor(Math.random() * availableHands.length)] ??
+    handLabels[0] ??
+    '??';
   const actions = spotJson.action_solutions.map((solution) => ({
     label: toActionLabel(solution.action),
-    frequency: solution.strategy[pickedIndex] ?? 0,
+    frequency:
+      handCounters[handLabel]?.actions_total_frequencies?.[
+        solution.action.code ?? ''
+      ] ?? 0,
   }));
   const preflopActions =
     pickedRow.preflopActions === 'ROOT' ? '' : pickedRow.preflopActions;
