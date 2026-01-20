@@ -57,18 +57,18 @@ export default function PreflopTrainingClient({ initialQuestion }: Props) {
 
       <section className="rounded-2xl border border-slate-200 bg-white px-5 py-5 shadow-sm">
         <div className="flex items-center justify-between text-sm text-slate-500">
-          <span>ポジション</span>
           <span className="font-semibold text-slate-900">
             {question.position}
           </span>
         </div>
-        <div className="mt-2 text-sm text-slate-600">{question.spotLabel}</div>
+        {question.spotLabel && (
+          <div className="mt-2 text-sm text-slate-600">
+            {question.spotLabel}
+          </div>
+        )}
         <div className="mt-4 flex items-center justify-between rounded-xl bg-slate-100 px-4 py-3">
           <div>
             <p className="text-xs text-slate-500">ハンド</p>
-            <p className="text-lg font-semibold text-slate-900">
-              {question.handLabel}
-            </p>
           </div>
           <div className="text-2xl font-semibold text-slate-900">
             {question.handDisplay}
@@ -139,6 +139,16 @@ export default function PreflopTrainingClient({ initialQuestion }: Props) {
                   </div>
                 ))}
               </div>
+              <a
+                className="block text-center text-sm font-semibold text-slate-600 underline"
+                href={`https://app.gtowizard.com/solutions?gametype=Cash6m50zGeneral25Open&depth=100&soltab=strategy&solution_type=gwiz&gmfs_solution_tab=ai_sols&gmfft_sort_key=0&gmfft_sort_order=desc&preflop_actions=${encodeURIComponent(
+                  question.preflopActions,
+                )}&history_spot=0&stratab=overview_range&gmff_depth=100&gmff_rake=NL50&gmff_opening_size=25x&gmff__3bet_size=gto`}
+                rel="noreferrer"
+                target="_blank"
+              >
+                このスポットを見る
+              </a>
             </div>
           )}
           <DialogFooter className="gap-2 sm:gap-0">

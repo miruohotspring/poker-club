@@ -19,9 +19,9 @@ type ActionFrequency = {
 export type PreflopQuestion = {
   position: string;
   spotLabel: string;
-  handLabel: string;
   handDisplay: string;
   actions: ActionFrequency[];
+  preflopActions: string;
 };
 
 const positions = ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'] as const;
@@ -165,13 +165,14 @@ export const getPreflopQuestion = async (): Promise<PreflopQuestion> => {
     label: toActionLabel(solution.action),
     frequency: solution.strategy[pickedIndex] ?? 0,
   }));
+  const preflopActions =
+    pickedRow.preflopActions === 'ROOT' ? '' : pickedRow.preflopActions;
 
   return {
     position,
-    spotLabel:
-      pickedRow.jpActions ?? `スポット: ${pickedRow.preflopActions}`,
-    handLabel,
+    spotLabel: pickedRow.jpActions ?? '',
     handDisplay: buildHandDisplay(handLabel),
     actions,
+    preflopActions,
   };
 };
