@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { checkRoomBalance } from '@/server/actions/check-room-balance';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
 import { useState } from 'react';
@@ -12,7 +13,17 @@ import CreateRoomForm from './create-room-form';
 import EnterNewRoomForm from './enter-new-room-form';
 import EnterRoomCheckForm from './enter-room-check-form';
 
-export default function EnterRoomForm() {
+type RecentRoom = {
+  roomId: string;
+  roomKey: string;
+  name: string;
+};
+
+type Props = {
+  recentRooms?: RecentRoom[];
+};
+
+export default function EnterRoomForm({ recentRooms = [] }: Props) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [roomKey, setRoomKey] = useState('');
   const [roomId, setRoomId] = useState('');
@@ -103,6 +114,30 @@ export default function EnterRoomForm() {
                 </Button>
               </div>
             </form>
+            {recentRooms.length > 0 && (
+              <div className="mt-6 space-y-3">
+                <p className="text-sm font-medium text-muted-foreground">
+                  最近入室した部屋
+                </p>
+                <div className="grid gap-2">
+                  {recentRooms.map((room) => (
+                    <Button
+                      key={room.roomId}
+                      asChild
+                      variant="outline"
+                      className="w-full justify-between"
+                    >
+                      <Link href={`/room?roomKey=${room.roomKey}`}>
+                        <span>{room.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {room.roomKey}
+                        </span>
+                      </Link>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
