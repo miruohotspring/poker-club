@@ -15,12 +15,16 @@ type RecentRoom = {
 const ROOM_SK_PREFIX = 'JOINED_AT#';
 const ROOM_DELIMITER = '#ROOM#';
 
-function extractRoomId(sortKey: string): { roomId: string | null } {
-  const [, roomId] = sortKey.split(ROOM_DELIMITER);
+function extractRoomInfo(sortKey: string): {
+  roomId: string | null;
+  joinedAt: string | null;
+} {
+  const [prefix, roomId] = sortKey.split(ROOM_DELIMITER);
   if (!roomId) {
-    return { roomId: null };
+    return { roomId: null, joinedAt: null };
   }
-  return { roomId };
+  const joinedAt = prefix?.replace(ROOM_SK_PREFIX, '') ?? null;
+  return { roomId, joinedAt };
 }
 
 export async function getRecentRooms(): Promise<RecentRoom[]> {
@@ -45,20 +49,30 @@ export async function getRecentRooms(): Promise<RecentRoom[]> {
   );
 
   const seenRoomIds = new Set<string>();
-  const roomIds = (queryRes.Items ?? [])
-    .map((item) => extractRoomId(item.gsi2sk as string).roomId)
-    .filter((roomId): roomId is string => Boolean(roomId))
-    .filter((roomId) => {
-      if (seenRoomIds.has(roomId)) {
+  const recentRooms = (queryRes.Items ?? [])
+    .map((item) => extractRoomInfo(item.gsi2sk as string))
+    .filter(
+      (info): info is { roomId: string; joinedAt: string | null } =>
+        Boolean(info.roomId),
+    )
+    .filter((info) => {
+      if (seenRoomIds.has(info.roomId)) {
         return false;
       }
-      seenRoomIds.add(roomId);
+      seenRoomIds.add(info.roomId);
       return true;
+    })
+    .sort((a, b) => {
+      const aTime = a.joinedAt ?? '';
+      const bTime = b.joinedAt ?? '';
+      return bTime.localeCompare(aTime);
     });
 
-  if (roomIds.length === 0) {
+  if (recentRooms.length === 0) {
     return [];
   }
+
+  const roomIds = recentRooms.map((room) => room.roomId);
 
   const batchRes = await ddbClient.send(
     new BatchGetCommand({
