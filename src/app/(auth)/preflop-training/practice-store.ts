@@ -1,8 +1,11 @@
 import type { TrainingAction } from './training-logic';
 
+export type PreflopSessionMode = 'random' | 'fixed';
+
 export type PreflopAttemptInput = {
   userId: string;
   attemptId: string;
+  sessionId?: string;
   createdAt: string;
   position: string;
   spotId: string;
@@ -25,6 +28,26 @@ export type PreflopAttemptItem = PreflopAttemptInput & {
   entityType: 'PREFLOP_TRAINING_ATTEMPT';
 };
 
+export type PreflopSessionInput = {
+  userId: string;
+  sessionId: string;
+  startedAt: string;
+  mode: PreflopSessionMode;
+  fixedSpotId?: string;
+};
+
+export type PreflopSessionItem = PreflopSessionInput & {
+  pk: string;
+  sk: string;
+  entityType: 'PREFLOP_TRAINING_SESSION';
+  status: 'ACTIVE' | 'COMPLETED';
+  attempts: number;
+  correct: number;
+  updatedAt: string;
+  endedAt?: string;
+  durationSeconds?: number;
+};
+
 export const buildAttemptItem = (
   attempt: PreflopAttemptInput,
 ): PreflopAttemptItem => ({
@@ -32,6 +55,27 @@ export const buildAttemptItem = (
   sk: `TRAINING#PREFLOP#ATTEMPT#${attempt.createdAt}#${attempt.attemptId}`,
   entityType: 'PREFLOP_TRAINING_ATTEMPT',
   ...attempt,
+});
+
+export const buildSessionKey = (
+  userId: string,
+  startedAt: string,
+  sessionId: string,
+) => ({
+  pk: `USER#${userId}`,
+  sk: `TRAINING#PREFLOP#SESSION#${startedAt}#${sessionId}`,
+});
+
+export const buildSessionItem = (
+  session: PreflopSessionInput,
+): PreflopSessionItem => ({
+  ...buildSessionKey(session.userId, session.startedAt, session.sessionId),
+  entityType: 'PREFLOP_TRAINING_SESSION',
+  status: 'ACTIVE',
+  attempts: 0,
+  correct: 0,
+  updatedAt: session.startedAt,
+  ...session,
 });
 
 export const buildAttemptQuery = (tableName: string, userId: string) => ({
@@ -42,6 +86,18 @@ export const buildAttemptQuery = (tableName: string, userId: string) => ({
     ':prefix': 'TRAINING#PREFLOP#ATTEMPT#',
   },
   ScanIndexForward: false,
+  ConsistentRead: true,
+});
+
+export const buildSessionQuery = (tableName: string, userId: string) => ({
+  TableName: tableName,
+  KeyConditionExpression: 'pk = :pk AND begins_with(sk, :prefix)',
+  ExpressionAttributeValues: {
+    ':pk': `USER#${userId}`,
+    ':prefix': 'TRAINING#PREFLOP#SESSION#',
+  },
+  ScanIndexForward: false,
+  ConsistentRead: true,
 });
 
 type AccuracyCounter = {
@@ -85,7 +141,11 @@ export const summarizeAttempts = (attempts: PreflopAttemptItem[]) => {
     bySpot.set(attempt.spotId, spot);
   }
 
+  const correct = attempts.filter((attempt) => attempt.correct).length;
   return {
+    attempts: attempts.length,
+    correct,
+    accuracy: accuracy({ attempts: attempts.length, correct }),
     positions: [...byPosition.entries()]
       .map(([position, counter]) => ({
         position,
