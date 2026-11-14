@@ -5,15 +5,26 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { options } from '@/app/api/auth/[...nextauth]/options';
 import { docClient } from '@/lib/dynamo';
-import { PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import {
+  GetCommand,
+  PutCommand,
+  QueryCommand,
+  TransactWriteCommand,
+  UpdateCommand,
+} from '@aws-sdk/lib-dynamodb';
 import { unstable_noStore as noStore } from 'next/cache';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import {
   buildAttemptItem,
   buildAttemptQuery,
+  buildSessionItem,
+  buildSessionKey,
+  buildSessionQuery,
   summarizeAttempts,
   type PreflopAttemptItem,
+  type PreflopSessionItem,
+  type PreflopSessionMode,
 } from './practice-store';
 import { actionForRoll, type TrainingAction } from './training-logic';
 
@@ -55,12 +66,18 @@ export type PreflopAttemptView = Omit<
   'pk' | 'sk' | 'entityType' | 'userId'
 >;
 
+export type PreflopSessionView = Omit<
+  PreflopSessionItem,
+  'pk' | 'sk' | 'entityType' | 'userId'
+>;
+
 export type PreflopTrainingSummary = ReturnType<typeof summarizeAttempts> & {
   history: PreflopAttemptView[];
+  sessions: PreflopSessionView[];
+  activeSession: PreflopSessionView | null;
 };
 
 const positions = ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'] as const;
-const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'];
 const suitSymbols = ['♠', '♥', '♦', '♣'];
 const tableName = process.env.POKER_APP_TABLE;
 
@@ -125,21 +142,21 @@ const toActionLabel = (action: {
   display_name?: string | null;
   allin?: boolean;
 }) => {
-  if (action.allin) return 'オールイン';
+  if (action.allin) return 'All-in';
   const betsize = action.betsize?.trim();
   switch (action.type) {
     case 'FOLD':
-      return 'フォールド';
+      return 'Fold';
     case 'CALL':
-      return 'コール';
+      return 'Call';
     case 'CHECK':
-      return 'チェック';
+      return 'Check';
     case 'BET':
-      return betsize ? `ベット ${betsize}` : 'ベット';
+      return betsize ? `Bet ${betsize}` : 'Bet';
     case 'RAISE':
-      return betsize ? `レイズ ${betsize}` : 'レイズ';
+      return betsize ? `Raise ${betsize}` : 'Raise';
     default:
-      return action.display_name ?? 'アクション';
+      return action.display_name ?? 'Action';
   }
 };
 
@@ -281,22 +298,163 @@ const loadAttempts = async (userId: string) => {
   return (response.Items ?? []) as PreflopAttemptItem[];
 };
 
-const toSummary = (attempts: PreflopAttemptItem[]): PreflopTrainingSummary => ({
-  ...summarizeAttempts(attempts),
-  history: attempts.slice(0, 50).map(({ pk, sk, entityType, userId, ...item }) =>
-    item,
-  ),
-});
+const loadSessions = async (userId: string) => {
+  const response = await docClient.send(
+    new QueryCommand(buildSessionQuery(requireTableName(), userId)),
+  );
+  return (response.Items ?? []) as PreflopSessionItem[];
+};
+
+const toAttemptView = ({
+  pk: _pk,
+  sk: _sk,
+  entityType: _entityType,
+  userId: _userId,
+  ...item
+}: PreflopAttemptItem): PreflopAttemptView => item;
+
+const toSessionView = ({
+  pk: _pk,
+  sk: _sk,
+  entityType: _entityType,
+  userId: _userId,
+  ...item
+}: PreflopSessionItem): PreflopSessionView => item;
+
+const toSummary = (
+  attempts: PreflopAttemptItem[],
+  sessions: PreflopSessionItem[],
+): PreflopTrainingSummary => {
+  const activeSession = sessions.find((session) => session.status === 'ACTIVE');
+  return {
+    ...summarizeAttempts(attempts),
+    history: attempts.slice(0, 50).map(toAttemptView),
+    sessions: sessions
+      .filter((session) => session.status === 'COMPLETED')
+      .slice(0, 50)
+      .map(toSessionView),
+    activeSession: activeSession ? toSessionView(activeSession) : null,
+  };
+};
+
+const loadSummary = async (userId: string) => {
+  const [attempts, sessions] = await Promise.all([
+    loadAttempts(userId),
+    loadSessions(userId),
+  ]);
+  return toSummary(attempts, sessions);
+};
 
 export const getPreflopTrainingSummary = async () => {
   noStore();
   const userId = await requireUserId();
-  return toSummary(await loadAttempts(userId));
+  return loadSummary(userId);
+};
+
+export const getPreflopSessionAttempts = async (sessionId: string) => {
+  noStore();
+  const userId = await requireUserId();
+  return (await loadAttempts(userId))
+    .filter((attempt) => attempt.sessionId === sessionId)
+    .toSorted((left, right) => left.createdAt.localeCompare(right.createdAt))
+    .map(toAttemptView);
+};
+
+export const startPreflopTrainingSession = async (input: {
+  mode: PreflopSessionMode;
+  fixedSpotId?: string;
+}) => {
+  const userId = await requireUserId();
+  const existingSessions = await loadSessions(userId);
+  const existing = existingSessions.find((session) => session.status === 'ACTIVE');
+  if (existing) {
+    return {
+      session: toSessionView(existing),
+      summary: await loadSummary(userId),
+    };
+  }
+
+  const startedAt = new Date().toISOString();
+  const item = buildSessionItem({
+    userId,
+    sessionId: randomUUID(),
+    startedAt,
+    mode: input.mode,
+    ...(input.mode === 'fixed' && input.fixedSpotId
+      ? { fixedSpotId: input.fixedSpotId }
+      : {}),
+  });
+  await docClient.send(
+    new PutCommand({
+      TableName: requireTableName(),
+      Item: item,
+      ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)',
+    }),
+  );
+  return {
+    session: toSessionView(item),
+    summary: toSummary(await loadAttempts(userId), [item, ...existingSessions]),
+  };
+};
+
+export const endPreflopTrainingSession = async (input: {
+  sessionId: string;
+  startedAt: string;
+}) => {
+  const userId = await requireUserId();
+  const key = buildSessionKey(userId, input.startedAt, input.sessionId);
+  const currentResponse = await docClient.send(
+    new GetCommand({
+      TableName: requireTableName(),
+      Key: key,
+      ConsistentRead: true,
+    }),
+  );
+  const current = currentResponse.Item as PreflopSessionItem | undefined;
+  if (!current || current.entityType !== 'PREFLOP_TRAINING_SESSION') {
+    throw new Error('練習セッションが見つかりません');
+  }
+  if (current.status === 'COMPLETED') {
+    return {
+      session: toSessionView(current),
+      summary: await loadSummary(userId),
+    };
+  }
+
+  const endedAt = new Date().toISOString();
+  const durationSeconds = Math.max(
+    0,
+    Math.floor((Date.parse(endedAt) - Date.parse(current.startedAt)) / 1000),
+  );
+  const response = await docClient.send(
+    new UpdateCommand({
+      TableName: requireTableName(),
+      Key: key,
+      UpdateExpression:
+        'SET #status = :completed, endedAt = :endedAt, durationSeconds = :durationSeconds, updatedAt = :endedAt',
+      ConditionExpression: '#status = :active',
+      ExpressionAttributeNames: { '#status': 'status' },
+      ExpressionAttributeValues: {
+        ':active': 'ACTIVE',
+        ':completed': 'COMPLETED',
+        ':endedAt': endedAt,
+        ':durationSeconds': durationSeconds,
+      },
+      ReturnValues: 'ALL_NEW',
+    }),
+  );
+  const completed = response.Attributes as PreflopSessionItem;
+  return {
+    session: toSessionView(completed),
+    summary: await loadSummary(userId),
+  };
 };
 
 export const recordPreflopAttempt = async (input: {
   question: PreflopQuestion;
   selectedActionKey: string;
+  sessionId: string;
+  sessionStartedAt: string;
 }) => {
   const userId = await requireUserId();
   const selectedAction = input.question.actions.find(
@@ -311,6 +469,7 @@ export const recordPreflopAttempt = async (input: {
   const item = buildAttemptItem({
     userId,
     attemptId: randomUUID(),
+    sessionId: input.sessionId,
     createdAt,
     position: input.question.position,
     spotId: input.question.spotId,
@@ -326,17 +485,45 @@ export const recordPreflopAttempt = async (input: {
     correct: selectedAction.key === expectedAction.key,
     actions: input.question.actions,
   });
+  const sessionKey = buildSessionKey(
+    userId,
+    input.sessionStartedAt,
+    input.sessionId,
+  );
 
   await docClient.send(
-    new PutCommand({
-      TableName: requireTableName(),
-      Item: item,
-      ConditionExpression: 'attribute_not_exists(pk) AND attribute_not_exists(sk)',
+    new TransactWriteCommand({
+      TransactItems: [
+        {
+          Put: {
+            TableName: requireTableName(),
+            Item: item,
+            ConditionExpression:
+              'attribute_not_exists(pk) AND attribute_not_exists(sk)',
+          },
+        },
+        {
+          Update: {
+            TableName: requireTableName(),
+            Key: sessionKey,
+            UpdateExpression:
+              'SET updatedAt = :updatedAt ADD attempts :one, correct :correct',
+            ConditionExpression: '#status = :active',
+            ExpressionAttributeNames: { '#status': 'status' },
+            ExpressionAttributeValues: {
+              ':active': 'ACTIVE',
+              ':updatedAt': createdAt,
+              ':one': 1,
+              ':correct': item.correct ? 1 : 0,
+            },
+          },
+        },
+      ],
     }),
   );
 
   return {
-    attempt: toSummary([item]).history[0],
-    summary: toSummary(await loadAttempts(userId)),
+    attempt: toAttemptView(item),
+    summary: await loadSummary(userId),
   };
 };
