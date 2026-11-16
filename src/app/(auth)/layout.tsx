@@ -17,9 +17,11 @@ export default async function Layout({
 
   return (
     <AuthProvider session={session}>
-      <div className="flex h-full flex-col">
+      <div data-auth-layout className="flex h-full flex-col">
         <Header />
-        <div className="flex-1">{children}</div>
+        <div data-auth-content className="flex-1">
+          {children}
+        </div>
       </div>
     </AuthProvider>
   );
