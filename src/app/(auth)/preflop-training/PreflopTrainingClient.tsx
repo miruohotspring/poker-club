@@ -1,6 +1,6 @@
 'use client';
 
-import { Dice5 } from 'lucide-react';
+import { Check, Dice5 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 
@@ -29,6 +29,7 @@ import {
   startPreflopTrainingSession,
 } from './actions';
 import { buildRollBands } from './training-logic';
+import styles from './training.module.css';
 
 type Props = {
   initialQuestion: PreflopQuestion;
@@ -297,7 +298,7 @@ export default function PreflopTrainingClient({
   };
 
   return (
-    <div className="min-h-screen bg-[#07090d] px-4 py-5 text-slate-100">
+    <div className={`${styles.viewport} bg-[#07090d] px-4 py-5 text-slate-100`}>
       <main className="mx-auto w-full max-w-md">
         <header className="flex h-12 items-center justify-between border-b border-slate-800">
           <h1 className="text-sm font-bold">Preflop</h1>
@@ -413,31 +414,58 @@ export default function PreflopTrainingClient({
               </div>
 
               {mode === 'fixed' && (
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  <select
+                <div className="mt-4 space-y-3">
+                  <div
+                    role="group"
                     aria-label="ポジション"
-                    className="h-10 rounded-md border border-slate-800 bg-[#0b0e13] px-3 text-xs text-slate-200"
-                    value={fixedPosition}
-                    onChange={(event) => selectPosition(event.target.value)}
+                    className="grid grid-cols-6 gap-1"
                   >
                     {positionOrder.map((position) => (
-                      <option key={position} value={position}>
+                      <button
+                        key={position}
+                        type="button"
+                        aria-pressed={fixedPosition === position}
+                        disabled={!spotsByPosition[position]?.length}
+                        className={`min-h-11 rounded-md border font-mono text-xs font-bold disabled:opacity-40 ${
+                          fixedPosition === position
+                            ? 'border-slate-400 bg-slate-800 text-slate-100'
+                            : 'border-slate-800 text-slate-400'
+                        }`}
+                        onClick={() => selectPosition(position)}
+                      >
                         {position}
-                      </option>
+                      </button>
                     ))}
-                  </select>
-                  <select
-                    aria-label="スポット"
-                    className="h-10 min-w-0 rounded-md border border-slate-800 bg-[#0b0e13] px-3 text-xs text-slate-200"
-                    value={selectedSpotId}
-                    onChange={(event) => setSelectedSpotId(event.target.value)}
-                  >
+                  </div>
+                  <div role="group" aria-label={`${fixedPosition}のスポット`}>
                     {selectedPositionSpots.map((spot) => (
-                      <option key={spot.id} value={spot.id}>
-                        {spot.label} / {displayActions(spot.preflopActions)}
-                      </option>
+                      <button
+                        key={spot.id}
+                        type="button"
+                        aria-pressed={selectedSpotId === spot.id}
+                        className={`flex min-h-16 w-full items-center gap-3 border-b px-3 py-3 text-left ${
+                          selectedSpotId === spot.id
+                            ? 'border-slate-500 bg-slate-800 text-slate-100'
+                            : 'border-slate-800 text-slate-400 hover:bg-slate-900'
+                        }`}
+                        onClick={() => setSelectedSpotId(spot.id)}
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="block break-words text-xs font-bold">
+                            {spot.label}
+                          </span>
+                          <span className="mt-1 block break-all font-mono text-[11px] text-slate-400">
+                            {displayActions(spot.preflopActions)}
+                          </span>
+                        </span>
+                        <span className="size-4 shrink-0">
+                          {selectedSpotId === spot.id && (
+                            <Check className="size-4" aria-hidden="true" />
+                          )}
+                        </span>
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
               )}
 

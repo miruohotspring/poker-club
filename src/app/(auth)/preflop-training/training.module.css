@@ -1,0 +1,35 @@
+/* Body scrolling is disabled for the room, so training needs its own bounded viewport. */
+:global([data-auth-layout]):has(.viewport) {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  min-width: 0;
+}
+
+:global([data-auth-layout]):has(.viewport) > header {
+  flex-shrink: 0;
+  min-width: 0;
+  gap: 1rem;
+}
+
+:global([data-auth-layout]):has(.viewport) > header h1 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+:global([data-auth-layout]):has(.viewport) > header button {
+  flex-shrink: 0;
+}
+
+:global([data-auth-content]):has(.viewport) {
+  min-height: 0;
+  min-width: 0;
+}
+
+.viewport {
+  height: 100%;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+}
